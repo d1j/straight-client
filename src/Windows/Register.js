@@ -7,52 +7,163 @@ import {
   FormText,
   Button
 } from "react-bootstrap";
+import isEmail from "validator/lib/isEmail";
+import axios from "axios";
 
 class Register extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
-    this.backView = this.backView.bind(this);
+    this.state = {
+      email: "",
+      username: "",
+      password: "",
+      cpassword: "",
+
+      is_from_valid: false,
+      message: "",
+      messColor: "",
+
+      _min_pass_length: 6, //Leaving it to 6 while developing the application and not realeasing it to the public.
+      _max_pass_length: 128,
+      _min_user_length: 3,
+      _max_user_length: 32
+    };
+    this.returnHome = this.returnHome.bind(this);
     this.processRegister = this.processRegister.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.validateForm = this.validateForm.bind(this);
   }
 
-  backView() {
+  //returns view to the Home.js
+  returnHome() {
     this.props.setView(0);
   }
 
-  processRegister() {
+  //temporary form validation
+  validateForm() {
+    let err = "";
+    let { username, email, password, cpassword } = this.state,
+      {
+        _max_pass_length,
+        _min_pass_length,
+        _max_user_length,
+        _min_user_length
+      } = this.state;
+
+    //Check email
+    if (!isEmail(email)) {
+      err = `Invalid email.`;
+    } else if (username.length < _min_user_length) {
+      err = `Username is too short. Min ${_min_user_length} characters.`;
+    } else if (username.length > _max_user_length) {
+      err = `Username is too long. Max ${_max_pass_length} characters.`;
+    } else if (password.length < _min_pass_length) {
+      err = `Password is too short. Min ${_min_pass_length} characters.`;
+    } else if (password.length > _max_pass_length) {
+      err = `Password is too long. Max ${_max_pass_length} characters.`;
+    } else if (password !== cpassword) {
+      err = `Password and confirmed password do not match.`;
+    }
+
+    this.setState({ message: err, messColor: "red" });
+
+    return err === "";
+  }
+
+  processRegister(event) {
     //TODO: Check if Data is correct
+    event.preventDefault();
+    var self = this;
+    if (this.validateForm()) {
+      //data is valid
+      axios
+        .post(`${self.props.host}/account/register`, {
+          username: self.state.username,
+          password: self.state.password,
+          email: self.state.email
+        })
+        .then(res => {
+          //registration succeded
+          self.setState({
+            message: "Registration successful!",
+            messColor: "green"
+          });
+        })
+        .catch(err => {
+          self.setState({
+            message: err.response.data.message,
+            messColor: "red"
+          });
+        });
+    }
+  }
+
+  handleChange(event) {
+    this.setState({ [event.target.name]: event.target.value, message: "" });
   }
 
   render() {
     return (
       <div>
-        <Form>
+        <Form onSubmit={this.processRegister}>
+          {/*Email group*/}
           <FormGroup>
             <FormLabel>Email Address</FormLabel>
-            <FormControl type="email" placeholder="Enter email" />
+            <FormControl
+              onChange={this.handleChange}
+              type="text"
+              placeholder="Enter email"
+              name="email"
+              required
+            />
           </FormGroup>
+
+          {/*Username group*/}
           <FormGroup>
             <FormLabel>Username</FormLabel>
-            <FormControl type="username" placeholder="Enter username" />
+            <FormControl
+              onChange={this.handleChange}
+              placeholder="Enter username"
+              type="text"
+              name="username"
+              required
+            />
             <FormText className="text-muted">
-              The username will be displayed in-game
+              The username will be displayed in-game and used to log into your
+              account.
             </FormText>
           </FormGroup>
+
+          {/*Password group*/}
           <FormGroup>
             <FormLabel>
               <FormLabel>Password</FormLabel>
-              <FormControl type="password" placeholder="Enter password" />
+              <FormControl
+                type="password"
+                onChange={this.handleChange}
+                placeholder="Enter password"
+                name="password"
+                required
+              />
             </FormLabel>
             <FormLabel>
               <FormLabel>Confirm Password</FormLabel>
-              <FormControl type="password" placeholder="Re-Enter password" />
+              <FormControl
+                type="password"
+                onChange={this.handleChange}
+                placeholder="Re-enter password"
+                name="cpassword"
+                required
+              />
             </FormLabel>
           </FormGroup>
-          <Button variant="primary" onClick={this.processRegister}>
+
+          <p style={{ color: this.state.messColor }}>{this.state.message}</p>
+
+          <Button variant="primary" type="submit">
             Register
           </Button>
-          <Button variant="secondary" onClick={this.backView}>
+          <Button variant="secondary" onClick={this.returnHome}>
             Back
           </Button>
         </Form>

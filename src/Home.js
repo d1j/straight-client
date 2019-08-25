@@ -8,7 +8,8 @@ class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      view: 0
+      view: 0,
+      host: "http://localhost:3001"
     };
 
     this.setView = this.setView.bind(this);
@@ -38,11 +39,13 @@ class Home extends React.Component {
           </div>
         );
       case 1: //Login screen
-        return <Login setView={this.setView} />;
+        return <Login setView={this.setView} host={this.state.host} />;
       case 2: //Register screen
-        return <Register setView={this.setView} />;
+        return <Register setView={this.setView} host={this.state.host} />;
       case 3: //home screen/post login
-        return <MainMenu setView={this.setView} />;
+        return <MainMenu setView={this.setView} host={this.state.host} />;
+      default:
+        return <h1> You are not supposed to be here...</h1>;
     }
   }
 }
