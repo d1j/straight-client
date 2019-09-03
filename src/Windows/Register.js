@@ -90,10 +90,17 @@ class Register extends Component {
           });
         })
         .catch(err => {
-          self.setState({
-            message: err.response.data.message,
-            messColor: "red"
-          });
+          if (!err.response) {
+            // network error
+            self.setState({
+              message: "Unable to reach server. Try again later."
+            });
+          } else {
+            self.setState({
+              message: err.response.data.message,
+              messColor: "red"
+            });
+          }
         });
     }
   }
