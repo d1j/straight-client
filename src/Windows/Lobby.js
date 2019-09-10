@@ -6,7 +6,7 @@ class Lobby extends Component {
     this.state = {};
   }
   render() {
-    return <div>Lobby</div>;
+    return <div>Left of right at here</div>;
   }
 }
 

@@ -10,10 +10,12 @@ class MainMenu extends Component {
     super(props);
     this.state = {
       username: "",
-      game_count_first: "",
-      game_count_second: "",
+      gameCountFirst: "",
+      gameCountSecond: "",
+      gameCount: "", //how many games a user has played
 
-      lobby_id: null,
+      lobbyID: null,
+      lobbyData: {},
 
       message: "",
 
@@ -23,12 +25,16 @@ class MainMenu extends Component {
     };
 
     this.chooseLobby = this.chooseLobby.bind(this);
-    this.joinLoby = this.joinLoby.bind(this);
+    this.joinLobby = this.joinLobby.bind(this);
     this.createLoby = this.createLoby.bind(this);
     this.logout = this.logout.bind(this);
     this.setView = this.setView.bind(this);
   }
 
+  /**
+   * |0 - MainMenu|1 - ChooseLobby|2 - CreateLobby|3 - Lobby|
+   *
+   */
   setView(view) {
     this.setState({ view: view });
   }
@@ -44,26 +50,18 @@ class MainMenu extends Component {
       .then(res => {
         self.setState({
           username: res.data.user,
-          game_count_first: res.data.first,
-          game_count_second: res.data.second,
+          gameCountFirst: res.data.first,
+          gameCountSecond: res.data.second,
+          gameCount: res.data.played,
           loading: false
         });
       })
       .catch(err => {
-        if (!err.response) {
-          // network error
-          self.setState({
-            message: "Unable to reach server. Try again later."
-          });
-        } else {
-          console.log(err.response);
-          self.setState({
-            username: "error ocurred",
-            game_count_first: "while loading",
-            game_count_second: "stats",
-            loading: false
-          });
-        }
+        //TODO: error handling
+        self.setState({
+          message: "Error occured while gathering user statistics"
+        });
+        console.log(err);
       });
   }
 
@@ -71,8 +69,26 @@ class MainMenu extends Component {
     this.setView(1);
   }
 
-  joinLoby() {
-    //to be implemented
+  joinLobby(lobbyID, lobbyPassword) {
+    let self = this;
+    this.setState({ loading: true });
+    axios
+      .post(`${self.props.host}/lobby/join`, {
+        lobby_id: lobbyID,
+        lobby_password: lobbyPassword,
+        token: self.props.__token
+      })
+      .then(res => {
+        console.log(res.data);
+        self.setState({ lobbyID: lobbyID, lobbyData: res.data, view: 3 });
+      })
+      .catch(err => {
+        console.log(err);
+        self.setState({
+          message: "Error occured while joining the lobby",
+          loading: false
+        });
+      });
   }
 
   createLoby() {
@@ -92,12 +108,8 @@ class MainMenu extends Component {
         self.props.setView(0);
       })
       .catch(err => {
-        if (!err.response) {
-          // network error
-          self.setState({
-            message: "Unable to reach server. Try again later."
-          });
-        }
+        //TODO: error handling
+        console.log(err);
         self.props.setView(0);
       });
   }
@@ -116,8 +128,9 @@ class MainMenu extends Component {
           return (
             <div>
               <p> Logged in as: {this.state.username}</p>
-              <p> Won games: {this.state.game_count_first}</p>
-              <p> Placed second: {this.state.game_count_second}</p>
+              <p> Games played: {this.state.gameCount}</p>
+              <p> Won games: {this.state.gameCountFirst}</p>
+              <p> Placed second: {this.state.gameCountSecond}</p>
               <div>
                 <Button onClick={this.chooseLobby}>Find loby</Button>
                 <Button onClick={this.createLoby}>Create loby</Button>
@@ -127,7 +140,14 @@ class MainMenu extends Component {
             </div>
           );
         case 1:
-          return <ChooseLobby />;
+          return (
+            <ChooseLobby
+              __token={this.props.__token}
+              setView={this.setView}
+              host={this.props.host}
+              joinLobby={this.joinLobby}
+            />
+          );
         case 2:
           return (
             <CreateLobby
@@ -135,10 +155,18 @@ class MainMenu extends Component {
               setView={this.setView}
               username={this.state.username}
               host={this.props.host}
+              joinLobby={this.joinLobby}
             />
           );
         case 3:
-          return <Lobby />;
+          return (
+            <Lobby
+              __token={this.props.__token}
+              setView={this.setView}
+              host={this.props.host}
+              data={this.state.lobbyData}
+            />
+          );
         default:
           return <h1>You are not supposed to be here...</h1>;
       }

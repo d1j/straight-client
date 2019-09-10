@@ -84,16 +84,8 @@ class Login extends Component {
           self.mainScreenView();
         })
         .catch(err => {
-          if (!err.response) {
-            // network error
-            self.setState({
-              message: "Unable to reach server. Try again later."
-            });
-          } else {
-            self.setState({
-              message: err.response.data.message
-            });
-          }
+          console.log(err);
+          self.setState({ message: "An error ocurred while logging in" });
         });
     }
   }
