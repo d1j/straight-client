@@ -21,7 +21,7 @@ class MainMenu extends Component {
 
       loading: true,
 
-      view: 0 //0 - main screen//1 - join lobby//2 - create lobby//
+      view: 0 //0 - main screen//1 - join lobby//2 - create lobby//3 - lobby//
     };
 
     this.chooseLobby = this.chooseLobby.bind(this);
@@ -79,8 +79,12 @@ class MainMenu extends Component {
         token: self.props.__token
       })
       .then(res => {
-        console.log(res.data);
-        self.setState({ lobbyID: lobbyID, lobbyData: res.data, view: 3 });
+        self.setState({
+          loading: false,
+          lobbyID: lobbyID,
+          lobbyData: res.data,
+          view: 3
+        });
       })
       .catch(err => {
         console.log(err);
@@ -118,7 +122,7 @@ class MainMenu extends Component {
     if (this.state.loading) {
       return (
         <div>
-          <p>Loading...</p>
+          <p>Loading... MainScreen</p>
           <p style={{ color: "red" }}>{this.state.message}</p>
         </div>
       );
@@ -134,6 +138,7 @@ class MainMenu extends Component {
               <div>
                 <Button onClick={this.chooseLobby}>Find loby</Button>
                 <Button onClick={this.createLoby}>Create loby</Button>
+                {/*TODO: Protect from spam*/}
                 <Button onClick={this.logout}>Log out</Button>
               </div>
               <p style={{ color: "red" }}>{this.state.message}</p>
@@ -162,9 +167,11 @@ class MainMenu extends Component {
           return (
             <Lobby
               __token={this.props.__token}
+              __dev={this.props.__dev}
               setView={this.setView}
               host={this.props.host}
               data={this.state.lobbyData}
+              lobbyID={this.state.lobbyID}
             />
           );
         default:

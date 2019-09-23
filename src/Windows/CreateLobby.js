@@ -18,7 +18,9 @@ class CreateLobby extends Component {
       lobby_password: "",
       lobby_id: null,
 
-      message: ""
+      message: "",
+
+      disabledButton: false
     };
 
     this.mainScreenView = this.mainScreenView.bind(this);
@@ -37,19 +39,24 @@ class CreateLobby extends Component {
   lobbyView(event) {
     event.preventDefault();
     let self = this;
-    axios
-      .post(`${self.props.host}/lobby/create`, {
-        token: self.props.__token,
-        lobby_password: self.state.lobby_password,
-        lobby_name: self.state.lobby_name
-      })
-      .then(res => {
-        self.props.joinLobby(res.data.lobby_id, this.state.lobby_password);
-      })
-      .catch(err => {
-        console.log(err);
-        self.setState({ message: "An error ocurred while creating a lobby" });
-      });
+    this.setState({ disabledButton: true }, () => {
+      axios
+        .post(`${self.props.host}/lobby/create`, {
+          token: self.props.__token,
+          lobby_password: self.state.lobby_password,
+          lobby_name: self.state.lobby_name
+        })
+        .then(res => {
+          self.props.joinLobby(res.data.lobby_id, this.state.lobby_password);
+        })
+        .catch(err => {
+          console.log(err);
+          self.setState({
+            message: "An error ocurred while creating a lobby",
+            disabledButton: false
+          });
+        });
+    });
   }
 
   render() {
@@ -80,7 +87,11 @@ class CreateLobby extends Component {
             </FormText>
           </FormGroup>
 
-          <Button variant="primary" type="submit">
+          <Button
+            variant="primary"
+            type="submit"
+            disabled={this.state.disabledButton}
+          >
             Create
           </Button>
           <Button variant="secondary" onClick={this.mainScreenView}>

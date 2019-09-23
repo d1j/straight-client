@@ -127,10 +127,11 @@ class ChooseLobby extends Component {
           onChange={this.handleChange}
         />
         <br />
+        {/*TODO: Protect from spam*/}
         <button onClick={this.joinLobby}>Join</button>
-        <button onClick={this.refreshLobbies}>Refresh</button>
+        {/*TODO: Protect from spam*/}
+        <button onClick={this.refreshLobbies}>Refresh</button>{" "}
         <button onClick={this.backView}>Back</button>
-
         <p style={{ color: "red" }}>{this.state.message}</p>
       </div>
     );
@@ -140,7 +141,7 @@ class ChooseLobby extends Component {
     if (this.state.loading) {
       return (
         <div>
-          <p>Loading...</p>
+          <p>Loading... ChooseLobby</p>
           <p style={{ color: "red" }}>{this.state.message}</p>
         </div>
       );

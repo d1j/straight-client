@@ -12,14 +12,16 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: "",
-      password: "",
+      username: "123456789",
+      password: "123456789",
       message: "",
 
       _min_pass_length: 6, //Leaving it to 6 while developing the application.
       _max_pass_length: 128,
       _min_user_length: 3,
-      _max_user_length: 32
+      _max_user_length: 32,
+
+      disabledButton: false
     };
     this.homeView = this.homeView.bind(this);
     this.mainScreenView = this.mainScreenView.bind(this);
@@ -68,26 +70,34 @@ class Login extends Component {
   processLogin(event) {
     event.preventDefault();
     var self = this;
-    if (this.validateForm()) {
-      //credentials meet requirements
-      axios
-        .post(`${self.props.host}/account/login`, {
-          username: self.state.username,
-          password: self.state.password
-        })
-        .then(res => {
-          //registration succeded
-          //BUILD: clean up
-          if (self.props.__dev) {
-            self.props.__setToken(res.data.token);
-          }
-          self.mainScreenView();
-        })
-        .catch(err => {
-          console.log(err);
-          self.setState({ message: "An error ocurred while logging in" });
-        });
-    }
+
+    this.setState({ disabledButton: true }, () => {
+      if (this.validateForm()) {
+        //credentials meet requirements
+        axios
+          .post(`${self.props.host}/account/login`, {
+            username: self.state.username,
+            password: self.state.password
+          })
+          .then(res => {
+            //registration succeded
+            //BUILD: clean up
+            if (self.props.__dev) {
+              self.props.__setToken(res.data.token);
+            }
+            self.mainScreenView();
+          })
+          .catch(err => {
+            console.log(err);
+            self.setState({
+              message: "An error ocurred while logging in",
+              disabledButton: false
+            });
+          });
+      } else {
+        self.setState({ disabledButton: false });
+      }
+    });
   }
 
   render() {
@@ -100,6 +110,7 @@ class Login extends Component {
             <FormControl
               type="text"
               placeholder="Enter username"
+              value={this.state.username}
               name="username"
               onChange={this.handleChange}
               required
@@ -110,6 +121,7 @@ class Login extends Component {
             <FormControl
               type="password"
               placeholder="Enter password"
+              value={this.state.password}
               name="password"
               onChange={this.handleChange}
               required
@@ -118,7 +130,11 @@ class Login extends Component {
 
           <p style={{ color: "red" }}>{this.state.message}</p>
 
-          <Button variant="primary" type="submit">
+          <Button
+            variant="primary"
+            type="submit"
+            disabled={this.state.disabledButton}
+          >
             Login
           </Button>
           <Button variant="secondary" onClick={this.homeView}>
