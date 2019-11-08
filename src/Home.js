@@ -3,13 +3,14 @@ import "./Home.css";
 import Login from "./Windows/Login";
 import Register from "./Windows/Register";
 import MainMenu from "./Windows/MainMenu";
+import Game from "./Windows/Game";
 import { Button } from "react-bootstrap";
 
 class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      view: 0, //0 - home screen//1 - login screen//2 - register screen//3 - main menu screen//
+      view: 0, //0 - home screen//1 - login screen//2 - register screen//3 - main menu screen//4 - development
       host: "http://localhost:3001",
       __token: "",
       __dev: true
@@ -66,6 +67,8 @@ class Home extends React.Component {
             __token={this.state.__token}
           />
         );
+      case 4:
+        return <Game />;
       default:
         return <h1> You are not supposed to be here...</h1>;
     }

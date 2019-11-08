@@ -1,0 +1,19 @@
+.message-display {
+  border: 2px solid rgb(89, 89, 89);
+}
+
+.current-call {
+  background-color: rgb(253, 213, 213);
+}
+.display-inline {
+  display: inline-block;
+}
+.call-active-button {
+  width: 10vw;
+  margin-bottom: 1vh;
+  color: red;
+}
+.call-button {
+  width: 10vw;
+  margin-bottom: 1vh;
+}
