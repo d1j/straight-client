@@ -3,8 +3,9 @@ import "./Home.css";
 import Login from "./Windows/Login";
 import Register from "./Windows/Register";
 import MainMenu from "./Windows/MainMenu";
-import Game from "./Windows/Game";
 import { Button } from "react-bootstrap";
+
+import PlayerAvatar from "./Components/PlayerAvatar";
 
 class Home extends React.Component {
   constructor(props) {
@@ -68,7 +69,15 @@ class Home extends React.Component {
           />
         );
       case 4:
-        return <Game />;
+        return (
+          <PlayerAvatar
+            is_current_player={true}
+            username="yeet"
+            player_id="0"
+            num_cards="4"
+            cards={[{ s: 0, r: 0 }, { s: 1, r: 0 }, { s: 2, r: 0 }]}
+          />
+        );
       default:
         return <h1> You are not supposed to be here...</h1>;
     }

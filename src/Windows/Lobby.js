@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import socketIOClient from "socket.io-client";
 
+import Game from "./Game";
+
 class Lobby extends Component {
   constructor(props) {
     super(props);
@@ -10,7 +12,8 @@ class Lobby extends Component {
 
       loading: true,
       message: "",
-      data: this.props.data
+      data: this.props.data,
+      view: 0 //0 - Lobby//1 - Game//
     };
 
     this.socket = socketIOClient(this.props.host, {
@@ -42,28 +45,35 @@ class Lobby extends Component {
       //data = {leftPlayerID, newHostID}
       let players = this.state.data.players;
       //remove player
-      let leftIndex = players.findIndex(p => p.player_id == data.leftPlayerID);
+      let leftIndex = players.map(p => p.player_id).indexOf(data.leftPlayerID);
       this.state.data.players.splice(leftIndex, 1);
 
-      if (data.newHostID != -1) {
+      if (+data.newHostID !== -1) {
         //set new host in players array
-        let newHostIndex = players.findIndex(
-          p => p.player_id == data.newHostID
-        );
+        let newHostIndex = players
+          .map(p => p.player_id)
+          .indexOf(data.newHostID);
         this.state.data.players[newHostIndex].isHost = true;
       }
 
       //If user is a new host
-      if (data.newHostID == this.state.playerID) {
+      if (+data.newHostID === this.state.playerID) {
         this.state.isHost = true;
       }
       this.forceUpdate();
+    });
+
+    this.socket.on("game-is-starting", () => {
+      if (this.props.__dev)
+        console.log("(SOCKET.IO) Host has started the game.");
+      this.setState({ view: 1 });
     });
 
     this.renderTable = this.renderTable.bind(this);
     this.renderButtonMenu = this.renderButtonMenu.bind(this);
     this.startGame = this.startGame.bind(this);
     this.leaveLobby = this.leaveLobby.bind(this);
+    this.setView = this.setView.bind(this);
   }
 
   componentDidMount() {
@@ -76,8 +86,11 @@ class Lobby extends Component {
     }
   }
 
+  setView(_view) {
+    this.setState({ view: _view });
+  }
+
   leaveLobby() {
-    //TODO: emit disconnect
     if (this.props.__dev) console.log("(SOCKET.IO) Leaving lobby...");
     this.socket.emit("leave-lobby");
     if (this.props.__dev) console.log("(SOCKET.IO) Disconnecting.");
@@ -86,7 +99,7 @@ class Lobby extends Component {
   }
 
   startGame() {
-    //TODO: emit start game
+    this.socket.emit("host-starts-game");
   }
 
   renderTable() {
@@ -140,13 +153,29 @@ class Lobby extends Component {
         </div>
       );
     } else {
-      return (
-        <div>
-          <h1>Lobby name: {this.state.data.name}</h1>
-          {this.renderTable()}
-          {this.renderButtonMenu()}
-        </div>
-      );
+      switch (this.state.view) {
+        case 0:
+          return (
+            <div>
+              <h1>Lobby name: {this.state.data.name}</h1>
+              {this.renderTable()}
+              {this.renderButtonMenu()}
+            </div>
+          );
+        case 1:
+          return (
+            <Game
+              __token={this.props.__token}
+              __dev={this.props.__dev}
+              setView={this.setView}
+              host={this.props.host}
+              socket={this.socket}
+              playerData={this.state.data.players}
+            />
+          );
+        default:
+          return <h1> You are not supposed to be here...</h1>;
+      }
     }
   }
 }

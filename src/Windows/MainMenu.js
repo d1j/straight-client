@@ -174,6 +174,7 @@ class MainMenu extends Component {
               lobbyID={this.state.lobbyID}
             />
           );
+
         default:
           return <h1>You are not supposed to be here...</h1>;
       }

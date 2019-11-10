@@ -36,7 +36,6 @@ class ChooseLobby extends Component {
         lobbies_on_page: self.state.lobbiesOnPage
       })
       .then(res => {
-        console.log(res.data);
         self.setState({ data: res.data, loading: false, chosenIndex: null });
       })
       .catch(err => {
@@ -49,7 +48,7 @@ class ChooseLobby extends Component {
   }
 
   chooseLobby(event) {
-    this.setState({ chosenIndex: event.target.name });
+    this.setState({ chosenIndex: +event.target.name });
   }
 
   handleChange(event) {
@@ -64,7 +63,7 @@ class ChooseLobby extends Component {
     if (this.state.chosenIndex == null) {
       this.setState({ message: "Please choose a lobby to join." });
     } else if (
-      this.state.password.length == 0 &&
+      this.state.password.length === 0 &&
       this.state.data[this.state.chosenIndex].requires_password
     ) {
       this.setState({ message: "Please enter the lobby password." });
@@ -95,12 +94,12 @@ class ChooseLobby extends Component {
                   key={index}
                   style={{
                     backgroundColor:
-                      this.state.chosenIndex == index ? "black" : "white"
+                      this.state.chosenIndex === index ? "black" : "white"
                   }}
                 >
                   <th>{lobby.name}</th>
                   <th>{`${lobby.player_count}/6`}</th>
-                  <th>{Boolean(lobby.is_open) ? "Open" : "Closed"}</th>
+                  <th>{lobby.status}</th>
                   <th>{lobby.requires_password ? "Yes" : "No"}</th>
                   <th>
                     <button name={index} onClick={this.chooseLobby}>

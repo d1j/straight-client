@@ -96,6 +96,8 @@ class SubCall extends Component {
             suit={this.props.suit}
           />
         );
+      default:
+        return <div>Error: SubCall</div>;
     }
   }
 }

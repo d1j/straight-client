@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 
 import CallMenu from "../Components/CallMenu";
-
-import TestInput from "../Components/TestInput";
+import PlayerAvatar from "../Components/PlayerAvatar";
 
 class Game extends Component {
   constructor(props) {
@@ -43,8 +42,31 @@ class Game extends Component {
       activityLog: [],
       maxLogLenght: 8,
 
+      playerData: [],
+
       loading: true
     };
+
+    for (let i = 0; i < this.props.playerData.length; i++) {
+      this.state.playerData.push({
+        player_id: this.props.playerData[i].player_id,
+        username: this.props.playerData[i]._id.username,
+        is_current_player: false,
+        num_cards: -1,
+        cards: []
+      });
+    }
+
+    this.props.socket.on("player-is-ready", data => {
+      if (this.props.__dev) console.log(`(SOCKET.IO) Player ${data} is ready.`);
+    });
+
+    this.props.socket.on("all-players-are-ready", () => {
+      if (this.props.__dev)
+        console.log(
+          "(SOCKET.IO) All players are now waiting for the cards to be dealt."
+        );
+    });
 
     this.c_setCall = this.c_setCall.bind(this);
     this.resetHand = this.resetHand.bind(this);
@@ -58,6 +80,9 @@ class Game extends Component {
   }
 
   componentDidMount() {
+    this.props.socket.emit("ready-to-start-game");
+    this.addNewMessage("The game has started.");
+    this.addNewMessage("Waiting for the server to deal cards.");
     this.setState({ loading: false });
   }
 
@@ -109,7 +134,7 @@ class Game extends Component {
 
     let comb, rankA, rankB, suit;
 
-    if (currSel == "current") {
+    if (currSel === "current") {
       text = this.state.combs[this.state.currentComb];
       comb = this.state.currentComb;
       rankA = this.state.currentRankA;
@@ -368,7 +393,9 @@ class Game extends Component {
   displayCallBar() {
     if (this.state.isCurrPlayer) {
       return (
-        <div style={{ width: "35vw", border: "3px solid black" }}>
+        <div
+          style={{ height: "100vh", width: "35vw", border: "3px solid black" }}
+        >
           <h2 className="message-display">
             Current call is: <br />
             <span className="current-call">{this.state.currCallText}</span>
@@ -430,7 +457,7 @@ class Game extends Component {
       <div
         style={{
           width: "20vw",
-          height: "100%",
+          height: "100vh",
           backgroundColor: "rgb(228, 250, 227)",
           border: "3px solid black"
         }}
@@ -456,7 +483,22 @@ class Game extends Component {
   }
 
   displayPlayers() {
-    return <div></div>;
+    return (
+      <div>
+        {this.state.playerData.map((player, index) => {
+          return (
+            <PlayerAvatar
+              key={index}
+              cards={player.cards}
+              num_cards={player.num_cards}
+              player_id={player.player_id}
+              username={player.username}
+              is_current_player={player.is_current_player}
+            />
+          );
+        })}
+      </div>
+    );
   }
 
   displayGameTable() {
@@ -464,14 +506,16 @@ class Game extends Component {
       <div
         style={{
           width: this.state.isCurrPlayer ? "65vw" : "100vw",
-          backgroundColor: "rgb(36, 112, 33)"
+          backgroundColor: "rgb(36, 112, 33)",
+          display: "flex"
         }}
       >
         {this.displayActivityLog()}
-        {/*TODO: this.displayPlayers()*/}
+        {this.displayPlayers()}
       </div>
     );
   }
+
   render() {
     if (this.state.loading) {
       return <div>LOADING...</div>;
@@ -479,7 +523,7 @@ class Game extends Component {
       if (this.state.isCurrPlayer)
         return (
           <div style={{ display: "flex" }}>
-            <div>{this.displayCallBar()}</div>
+            {this.displayCallBar()}
 
             {this.displayGameTable()}
           </div>
