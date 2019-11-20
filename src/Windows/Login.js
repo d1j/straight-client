@@ -12,14 +12,14 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: "123456789",
+      email: "123456789@gmail.com",
       password: "123456789",
       message: "",
 
       _min_pass_length: 6, //Leaving it to 6 while developing the application.
       _max_pass_length: 128,
-      _min_user_length: 3,
-      _max_user_length: 32,
+      _min_email_length: 3,
+      _max_email_length: 64,
 
       disabledButton: false
     };
@@ -44,18 +44,18 @@ class Login extends Component {
 
   validateForm() {
     let err = "";
-    let { username, password } = this.state,
+    let { email, password } = this.state,
       {
         _max_pass_length,
         _min_pass_length,
-        _max_user_length,
-        _min_user_length
+        _max_email_length,
+        _min_email_length
       } = this.state;
 
-    if (username.length < _min_user_length) {
-      err = `Username is too short. Min ${_min_user_length} characters.`;
-    } else if (username.length > _max_user_length) {
-      err = `Username is too long. Max ${_max_pass_length} characters.`;
+    if (email.length < _min_email_length) {
+      err = `Email is too short. Min ${_min_email_length} characters.`;
+    } else if (email.length > _max_email_length) {
+      err = `Email is too long. Max ${_max_email_length} characters.`;
     } else if (password.length < _min_pass_length) {
       err = `Password is too short. Min ${_min_pass_length} characters.`;
     } else if (password.length > _max_pass_length) {
@@ -76,7 +76,7 @@ class Login extends Component {
         //credentials meet requirements
         axios
           .post(`${self.props.host}/account/login`, {
-            username: self.state.username,
+            email: self.state.email,
             password: self.state.password
           })
           .then(res => {
@@ -106,12 +106,12 @@ class Login extends Component {
         <p>123456789</p>
         <Form onSubmit={this.processLogin}>
           <FormGroup>
-            <FormLabel>Username</FormLabel>
+            <FormLabel>Email</FormLabel>
             <FormControl
               type="text"
-              placeholder="Enter username"
-              value={this.state.username}
-              name="username"
+              placeholder="Enter email"
+              value={this.state.email}
+              name="email"
               onChange={this.handleChange}
               required
             />

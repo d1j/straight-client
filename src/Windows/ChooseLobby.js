@@ -12,7 +12,8 @@ class ChooseLobby extends Component {
       lobbiesOnPage: 10,
       lobbyPasword: "",
       chosenIndex: null,
-      password: ""
+      password: "",
+      searchString: ""
     };
 
     this.renderTable = this.renderTable.bind(this);
@@ -29,11 +30,13 @@ class ChooseLobby extends Component {
 
   refreshLobbies() {
     let self = this;
+    this.setState({ loading: true });
     axios
-      .post(`${self.props.host}/lobby/getLobbyList`, {
+      .post(`${self.props.host}/lobby/list`, {
         token: self.props.__token,
         page: self.state.page,
-        lobbies_on_page: self.state.lobbiesOnPage
+        lobbies_on_page: self.state.lobbiesOnPage,
+        search: self.state.searchString
       })
       .then(res => {
         self.setState({ data: res.data, loading: false, chosenIndex: null });
@@ -126,6 +129,12 @@ class ChooseLobby extends Component {
           onChange={this.handleChange}
         />
         <br />
+        <p>Search string</p>
+        <input
+          name="searchString"
+          value={this.state.searchString}
+          onChange={this.handleChange}
+        />
         {/*TODO: Protect from spam*/}
         <button onClick={this.joinLobby}>Join</button>
         {/*TODO: Protect from spam*/}

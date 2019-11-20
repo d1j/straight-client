@@ -125,6 +125,9 @@ class Register extends Component {
               name="email"
               required
             />
+            <FormText className="text-muted">
+              This email will be used to log into your account.
+            </FormText>
           </FormGroup>
 
           {/*Username group*/}
@@ -138,8 +141,7 @@ class Register extends Component {
               required
             />
             <FormText className="text-muted">
-              The username will be displayed in-game and used to log into your
-              account.
+              This username will be displayed in-game.
             </FormText>
           </FormGroup>
 
