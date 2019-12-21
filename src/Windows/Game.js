@@ -61,6 +61,17 @@ class Game extends Component {
       if (this.props.__dev) console.log(`(SOCKET.IO) Player ${data} is ready.`);
     });
 
+    this.props.socket.on("dealt-cards", data => {
+      if (this.props.__dev)
+        console.log(`(SOCKET.IO) Server has dealt the following cards:`);
+      console.log(data);
+    });
+
+    this.props.socket.on("started-hand", () => {
+      if (this.props.__dev)
+        console.log(`(SOCKET.IO) The hand has been started.`);
+    });
+
     this.props.socket.on("all-players-are-ready", () => {
       if (this.props.__dev)
         console.log(
