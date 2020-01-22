@@ -3,6 +3,15 @@ import React, { Component } from "react";
 import CallMenu from "../Components/CallMenu";
 import PlayerAvatar from "../Components/PlayerAvatar";
 
+/**
+ * call = {
+    comb,
+    rankA,
+    rankB,
+    suit
+  };
+ */
+
 class Game extends Component {
   constructor(props) {
     super(props);
@@ -33,16 +42,17 @@ class Game extends Component {
       selectedRankB: -1,
       selectedSuit: -1,
 
-      isCurrPlayer: true,
       currPlayerID: -1,
       currCallText: "No call was made yet",
       selectedCallText: "Make a Call",
       callValidity: "invalid",
 
-      activityLog: [],
-      maxLogLenght: 8,
-
+      isUserCurrPlayer: false,
+      userPlayerID: -1,
       playerData: [],
+
+      activityLog: [],
+      maxLogLength: 8,
 
       loading: true
     };
@@ -51,32 +61,53 @@ class Game extends Component {
       this.state.playerData.push({
         player_id: this.props.playerData[i].player_id,
         username: this.props.playerData[i]._id.username,
+        is_user: this.props.playerData[i].isUser,
         is_current_player: false,
-        num_cards: -1,
+        num_cards: 1,
         cards: []
       });
     }
 
     this.props.socket.on("player-is-ready", data => {
-      if (this.props.__dev) console.log(`(SOCKET.IO) Player ${data} is ready.`);
+      if (this.props.__dev)
+        console.log(`(SOCKET.IO) player-is-ready || ${data}`);
+    });
+
+    this.props.socket.on("current-player", data => {
+      if (this.props.__dev)
+        console.log(`(SOCKET.IO) current-player || ${data}`);
+      if (this.state.userPlayerID == data) {
+      }
+
+      this.setState({
+        currPlayerID: data
+      });
     });
 
     this.props.socket.on("dealt-cards", data => {
-      if (this.props.__dev)
-        console.log(`(SOCKET.IO) Server has dealt the following cards:`);
+      if (this.props.__dev) console.log(`(SOCKET.IO) dealt-cards`);
       console.log(data);
+      this.addNewMessage("The cards have been deat.");
+      let index = this.findUserIndex(this.state.userPlayerID);
+      this.state.playerData[index].cards = data;
+      this.forceUpdate();
     });
 
     this.props.socket.on("started-hand", () => {
-      if (this.props.__dev)
-        console.log(`(SOCKET.IO) The hand has been started.`);
+      if (this.props.__dev) console.log(`(SOCKET.IO) started-hand `);
+
+      let index = this.findUserIndex(this.state.currPlayerID);
+      let username = this.state.playerData[index].username;
+      this.addNewMessage(`${username} is now calling.`);
+
+      this.setState({
+        isUserCurrPlayer:
+          this.state.userPlayerID == this.state.currPlayerID ? true : false
+      });
     });
 
     this.props.socket.on("all-players-are-ready", () => {
-      if (this.props.__dev)
-        console.log(
-          "(SOCKET.IO) All players are now waiting for the cards to be dealt."
-        );
+      if (this.props.__dev) console.log("(SOCKET.IO) all-players-are-ready");
     });
 
     this.c_setCall = this.c_setCall.bind(this);
@@ -88,13 +119,38 @@ class Game extends Component {
     this.displayActivityLog = this.displayActivityLog.bind(this);
     this.displayPlayers = this.displayPlayers.bind(this);
     this.addNewMessage = this.addNewMessage.bind(this);
+    this.makeCall = this.makeCall.bind(this);
+  }
+
+  findUserIndex(id) {
+    for (let i = 0; i < this.state.playerData.length; i++) {
+      if (this.state.playerData[i].player_id == id) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   componentDidMount() {
+    /**
+     *  0: {_id: {…}, player_id: 0, isHost: true, isUser: false}
+        1:
+          _id: {wonGames: {…}, playedGames: 0, username: "qwe"}
+          player_id: 1
+          isHost: false
+          isUser: true
+     */
+    let playerData = this.props.playerData;
+    let userPlayerID;
+    for (let i = 0; i < playerData.length; i++) {
+      if (playerData[i].isUser) {
+        userPlayerID = playerData[i].player_id;
+      }
+    }
     this.props.socket.emit("ready-to-start-game");
     this.addNewMessage("The game has started.");
     this.addNewMessage("Waiting for the server to deal cards.");
-    this.setState({ loading: false });
+    this.setState({ loading: false, userPlayerID });
   }
 
   c_setCall(comb, rankA, rankB, suit) {
@@ -131,7 +187,8 @@ class Game extends Component {
         selectedRankB: -1,
         selectedSuit: -1,
 
-        isCurrPlayer: false
+        isUserCurrPlayer: false,
+        currPlayerID: -1
       },
       () => {
         this.updateCallText("current");
@@ -401,8 +458,21 @@ class Game extends Component {
     );
   }
 
+  makeCall() {
+    console.log(this.state);
+    let call = {
+      comb: this.state.selectedComb,
+      rankA: this.state.selectedRankA,
+      rankB: this.state.selectedRankB,
+      suit: this.state.selectedSuit
+    };
+    this.props.socket.emit("call", call);
+    this.setState({ isUserCurrPlayer: false });
+    this.addNewMessage("You made a call.");
+  }
+
   displayCallBar() {
-    if (this.state.isCurrPlayer) {
+    if (this.state.isUserCurrPlayer) {
       return (
         <div
           style={{ height: "100vh", width: "35vw", border: "3px solid black" }}
@@ -451,12 +521,11 @@ class Game extends Component {
       ":" +
       date.getSeconds() +
       "| ";
-    if (log.length >= this.state.maxLogLenght) {
-      for (let i = 0; i < this.state.maxLogLenght - 1; i++) {
+    if (log.length >= this.stateth) {
+      for (let i = 0; i < this.stateth - 1; i++) {
         this.state.activityLog[i] = this.state.activityLog[i + 1];
       }
-      this.state.activityLog[this.state.maxLogLenght - 1] =
-        currentTime + message;
+      this.state.activityLog[this.stateth - 1] = currentTime + message;
     } else {
       this.state.activityLog[log.length] = currentTime + message;
     }
@@ -516,7 +585,7 @@ class Game extends Component {
     return (
       <div
         style={{
-          width: this.state.isCurrPlayer ? "65vw" : "100vw",
+          width: this.state.isUserCurrPlayer ? "65vw" : "100vw",
           backgroundColor: "rgb(36, 112, 33)",
           display: "flex"
         }}
@@ -531,7 +600,7 @@ class Game extends Component {
     if (this.state.loading) {
       return <div>LOADING...</div>;
     } else {
-      if (this.state.isCurrPlayer)
+      if (this.state.isUserCurrPlayer)
         return (
           <div style={{ display: "flex" }}>
             {this.displayCallBar()}
