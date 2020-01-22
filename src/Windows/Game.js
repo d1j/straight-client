@@ -76,8 +76,6 @@ class Game extends Component {
     this.props.socket.on("current-player", data => {
       if (this.props.__dev)
         console.log(`(SOCKET.IO) current-player || ${data}`);
-      if (this.state.userPlayerID == data) {
-      }
 
       this.setState({
         currPlayerID: data
@@ -85,15 +83,17 @@ class Game extends Component {
     });
 
     this.props.socket.on("dealt-cards", data => {
-      if (this.props.__dev) console.log(`(SOCKET.IO) dealt-cards`);
-      console.log(data);
+      if (this.props.__dev) {
+        console.log(`(SOCKET.IO) dealt-cards`);
+        console.log(data);
+      }
       this.addNewMessage("The cards have been deat.");
       let index = this.findUserIndex(this.state.userPlayerID);
       this.state.playerData[index].cards = data;
       this.forceUpdate();
     });
 
-    this.props.socket.on("started-hand", () => {
+    this.props.socket.on("next-player-can-call", () => {
       if (this.props.__dev) console.log(`(SOCKET.IO) started-hand `);
 
       let index = this.findUserIndex(this.state.currPlayerID);
@@ -110,6 +110,25 @@ class Game extends Component {
       if (this.props.__dev) console.log("(SOCKET.IO) all-players-are-ready");
     });
 
+    this.props.socket.on("player-called", data => {
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) player-called");
+        console.log(data);
+      }
+      let index = this.findUserIndex(this.state.currPlayerID);
+      this.addNewMessage(
+        `${this.state.playerData[index].username} has called.`
+      );
+      this.setState({
+        currentComb: data.comb,
+        currentRankA: data.rankA,
+        currentRankB: data.rankB,
+        currentSuit: data.suit
+      });
+      this.updateCallText("current");
+      //TODO: Display current call bar
+    });
+
     this.c_setCall = this.c_setCall.bind(this);
     this.resetHand = this.resetHand.bind(this);
     this.updateCallText = this.updateCallText.bind(this);
@@ -120,6 +139,7 @@ class Game extends Component {
     this.displayPlayers = this.displayPlayers.bind(this);
     this.addNewMessage = this.addNewMessage.bind(this);
     this.makeCall = this.makeCall.bind(this);
+    this.findUserIndex = this.findUserIndex.bind(this);
   }
 
   findUserIndex(id) {
