@@ -12,8 +12,8 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: "123456789@gmail.com",
-      password: "123456789",
+      email: "",
+      password: "",
       message: "",
 
       _min_pass_length: 6, //Leaving it to 6 while developing the application.
@@ -103,7 +103,6 @@ class Login extends Component {
   render() {
     return (
       <div>
-        <p>123456789</p>
         <Form onSubmit={this.processLogin}>
           <FormGroup>
             <FormLabel>Email</FormLabel>
