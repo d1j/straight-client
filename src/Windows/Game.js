@@ -3,15 +3,6 @@ import React, { Component } from "react";
 import CallMenu from "../Components/CallMenu";
 import PlayerAvatar from "../Components/PlayerAvatar";
 
-/**
- * call = {
-    comb,
-    rankA,
-    rankB,
-    suit
-  };
- */
-
 class Game extends Component {
   constructor(props) {
     super(props);
@@ -49,10 +40,11 @@ class Game extends Component {
 
       isUserCurrPlayer: false,
       userPlayerID: -1,
+      lostPlayerID: -1,
       playerData: [],
 
       activityLog: [],
-      maxLogLength: 8,
+      maxLogLength: 10,
 
       loading: true
     };
@@ -87,18 +79,21 @@ class Game extends Component {
         console.log(`(SOCKET.IO) dealt-cards`);
         console.log(data);
       }
-      this.addNewMessage("The cards have been deat.");
       let index = this.findUserIndex(this.state.userPlayerID);
       this.state.playerData[index].cards = data;
       this.forceUpdate();
     });
 
     this.props.socket.on("next-player-can-call", () => {
-      if (this.props.__dev) console.log(`(SOCKET.IO) started-hand `);
+      if (this.props.__dev) console.log(`(SOCKET.IO) next-player-can-call`);
 
-      let index = this.findUserIndex(this.state.currPlayerID);
-      let username = this.state.playerData[index].username;
-      this.addNewMessage(`${username} is now calling.`);
+      if (this.state.currPlayerID == this.state.userPlayerID) {
+        this.addNewMessage(`You are now making a decision.`);
+      } else {
+        let index = this.findUserIndex(this.state.currPlayerID);
+        let username = this.state.playerData[index].username;
+        this.addNewMessage(`${username} is now making a decision.`);
+      }
 
       this.setState({
         isUserCurrPlayer:
@@ -109,13 +104,25 @@ class Game extends Component {
     this.props.socket.on("started-hand", () => {
       if (this.props.__dev) console.log(`(SOCKET.IO) started-hand `);
 
+      //lostPlayerID will be set in hand-result
+      //if lostPlayerID != -1, it means that the player got +1 card and the client has not updated player's num_cards yet
+      if (this.state.lostPlayerID != -1) {
+        let _index = this.findUserIndex(this.state.lostPlayerID);
+        this.state.playerData[_index].num_cards++;
+        this.addNewMessage(
+          `${this.state.playerData[_index].username} received +1 card.`
+        );
+      }
+
       let index = this.findUserIndex(this.state.currPlayerID);
-      let username = this.state.playerData[index].username;
-      this.addNewMessage(`${username} is now calling.`);
+      this.addNewMessage(
+        `${this.state.playerData[index].username} is now calling.`
+      );
 
       this.setState({
         isUserCurrPlayer:
-          this.state.userPlayerID == this.state.currPlayerID ? true : false
+          this.state.userPlayerID == this.state.currPlayerID ? true : false,
+        lostPlayerID: -1
       });
     });
 
@@ -129,9 +136,7 @@ class Game extends Component {
         console.log(data);
       }
       let index = this.findUserIndex(this.state.currPlayerID);
-      this.addNewMessage(
-        `${this.state.playerData[index].username} has called.`
-      );
+      this.addNewMessage(`${this.state.playerData[index].username} called.`);
       this.setState({
         currentComb: data.comb,
         currentRankA: data.rankA,
@@ -142,12 +147,6 @@ class Game extends Component {
       //TODO: Display current call bar
     });
 
-    /**
-      [
-        { status: "playing", cards: [{ s: 1, r: 4 }], player_id: 0, num_cards: 1 },
-        { status: "playing", cards: [{ s: 0, r: 5 }], player_id: 1, num_cards: 1 }
-      ];
-     */
     this.props.socket.on("player-checked", () => {
       if (this.props.__dev) {
         console.log("(SOCKET.IO) player-checked");
@@ -157,13 +156,17 @@ class Game extends Component {
         `${this.state.playerData[_index].username} has checked.`
       );
     });
-
+    /**
+      [
+        { status: "playing", cards: [{ s: 1, r: 4 }], player_id: 0, num_cards: 1 },
+        { status: "playing", cards: [{ s: 0, r: 5 }], player_id: 1, num_cards: 1 }
+      ];
+     */
     this.props.socket.on("all-cards", data => {
       if (this.props.__dev) {
         console.log("(SOCKET.IO) all-cards");
         console.log(data);
       }
-      let _index = this.findUserIndex(this.state.currPlayerID);
       this.addNewMessage(`Displaying all cards.`);
       for (let i = 0; i < data.length; i++) {
         let index = this.findUserIndex(data[i].player_id);
@@ -176,6 +179,62 @@ class Game extends Component {
         }
       }
       this.forceUpdate();
+    });
+
+    this.props.socket.on("hand-result", data => {
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) hand-result");
+        console.log(data);
+      }
+      let index = this.findUserIndex(data.lost_player);
+      this.addNewMessage(
+        `${this.state.playerData[index].username} lost the hand.`
+      );
+      this.setState({ lostPlayerID: data.lost_player });
+    });
+
+    this.props.socket.on("refresh-hand", () => {
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) refresh-hand");
+      }
+      this.addNewMessage(`A new hand will start soon.`);
+      this.resetHand();
+    });
+
+    this.props.socket.on("player-out", data => {
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) player-out");
+        console.log(data);
+      }
+      let index = this.findUserIndex(data);
+      if (data == this.state.userPlayerID) {
+        this.addNewMessage(`You got the 5th card and are now spectating.`);
+      } else {
+        this.addNewMessage(
+          `${this.state.playerData[index].username} got the 5th card and is now spectating.`
+        );
+      }
+      this.state.playerData[index].num_cards = -1;
+      this.state.playerData[index].cards = [];
+      this.forceUpdate();
+    });
+
+    this.props.socket.on("player-won", data => {
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) player-won");
+        console.log(data);
+      }
+      let index = this.findUserIndex(data);
+      this.addNewMessage(
+        `${this.state.playerData[index].username} won the game!`
+      );
+    });
+
+    this.props.socket.on("return-to-lobby", () => {
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) return-to-lobby");
+      }
+      this.props.setView(0);
     });
 
     this.c_setCall = this.c_setCall.bind(this);
@@ -239,10 +298,14 @@ class Game extends Component {
   }
 
   resetHand() {
+    for (let i = 0; i < this.state.playerData.length; i++) {
+      if (this.state.playerData[i].player_id != this.state.userPlayerID) {
+        this.state.playerData[i].cards = [];
+      }
+    }
+    this.forceUpdate();
     this.setState(
       {
-        currPlayerID: -1,
-
         currCallText: "No call was made yet",
         selectedCallText: "Make a Call",
         callValidity: "invalid",
@@ -255,10 +318,7 @@ class Game extends Component {
         selectedComb: -1,
         selectedRankA: -1,
         selectedRankB: -1,
-        selectedSuit: -1,
-
-        isUserCurrPlayer: false,
-        currPlayerID: -1
+        selectedSuit: -1
       },
       () => {
         this.updateCallText("current");
@@ -543,9 +603,10 @@ class Game extends Component {
   }
 
   sendCheck() {
-    this.props.socket.emit("check");
-    this.setState({ isUserCurrPlayer: false });
-    this.addNewMessage("You checked the current call.");
+    if (this.state.currentComb > -1 && this.state.currentComb < 10) {
+      this.props.socket.emit("check");
+      this.setState({ isUserCurrPlayer: false });
+    }
   }
 
   displayCallBar() {
@@ -598,11 +659,12 @@ class Game extends Component {
       ":" +
       date.getSeconds() +
       "| ";
-    if (log.length >= this.stateth) {
-      for (let i = 0; i < this.stateth - 1; i++) {
+    if (log.length >= this.state.maxLogLength) {
+      for (let i = 0; i < this.state.maxLogLength - 1; i++) {
         this.state.activityLog[i] = this.state.activityLog[i + 1];
       }
-      this.state.activityLog[this.stateth - 1] = currentTime + message;
+      this.state.activityLog[this.state.maxLogLength - 1] =
+        currentTime + message;
     } else {
       this.state.activityLog[log.length] = currentTime + message;
     }

@@ -29,20 +29,26 @@ class Lobby extends Component {
     });
 
     this.socket.on("joined-lobby", () => {
-      if (this.props.__dev) console.log("(SOCKET.IO) Joined the lobby.");
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) joined-lobby");
+      }
       this.setState({ loading: false });
     });
 
     this.socket.on("new-player-in-lobby", data => {
-      if (this.props.__dev)
-        console.log("(SOCKET.IO) New player joined the lobby.");
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) new-player-in-lobby");
+        console.log(data);
+      }
       this.state.data.players.push(data);
       this.forceUpdate();
     });
 
     this.socket.on("player-left", data => {
-      if (this.props.__dev) console.log("(SOCKET.IO) Player left the lobby.");
-      //data = {leftPlayerID, newHostID}
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) player-left");
+        console.log(data);
+      } //data = {leftPlayerID, newHostID}
       let players = this.state.data.players;
       //remove player
       let leftIndex = players.map(p => p.player_id).indexOf(data.leftPlayerID);
@@ -64,9 +70,16 @@ class Lobby extends Component {
     });
 
     this.socket.on("game-is-starting", () => {
-      if (this.props.__dev)
-        console.log("(SOCKET.IO) Host has started the game.");
+      if (this.props.__dev) console.log("(SOCKET.IO) game-is-starting");
       this.setState({ view: 1 });
+    });
+
+    this.socket.on("lobby-info", _data => {
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) lobby-info");
+        console.log(_data);
+      }
+      this.setState({ data: _data });
     });
 
     this.renderTable = this.renderTable.bind(this);
@@ -87,7 +100,11 @@ class Lobby extends Component {
   }
 
   setView(_view) {
-    this.setState({ view: _view });
+    this.setState({ view: _view }, () => {
+      if (_view == 0) {
+        this.socket.emit("get-lobby-info");
+      }
+    });
   }
 
   leaveLobby() {
