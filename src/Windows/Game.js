@@ -2,6 +2,7 @@ import React, { Component } from "react";
 
 import CallMenu from "../Components/CallMenu";
 import PlayerAvatar from "../Components/PlayerAvatar";
+import CurrentCall from "../Components/CurrentCall";
 
 class Game extends Component {
   constructor(props) {
@@ -45,6 +46,8 @@ class Game extends Component {
 
       activityLog: [],
       maxLogLength: 10,
+
+      inputMessage: "",
 
       loading: true
     };
@@ -237,6 +240,17 @@ class Game extends Component {
       this.props.setView(0);
     });
 
+    this.props.socket.on("message", data => {
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) message");
+        console.log(data);
+      }
+      let index = this.findUserIndex(data.player_id);
+      this.addNewMessage(
+        `${this.state.playerData[index].username}: ${data.message}`
+      );
+    });
+
     this.c_setCall = this.c_setCall.bind(this);
     this.resetHand = this.resetHand.bind(this);
     this.updateCallText = this.updateCallText.bind(this);
@@ -249,6 +263,19 @@ class Game extends Component {
     this.findUserIndex = this.findUserIndex.bind(this);
     this.sendCall = this.sendCall.bind(this);
     this.sendCheck = this.sendCheck.bind(this);
+    this.displayCurrentCall = this.displayCurrentCall.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.sendMessage = this.sendMessage.bind(this);
+  }
+
+  sendMessage(e) {
+    e.preventDefault();
+    this.props.socket.emit("message", this.state.inputMessage);
+    this.setState({ inputMessage: "" });
+  }
+
+  handleChange(event) {
+    this.setState({ [event.target.name]: event.target.value });
   }
 
   findUserIndex(id) {
@@ -671,6 +698,20 @@ class Game extends Component {
     this.forceUpdate();
   }
 
+  displayCurrentCall() {
+    return (
+      <div>
+        <h4>Current Call</h4>
+        <CurrentCall
+          comb={this.state.currentComb}
+          rankA={this.state.currentRankA}
+          rankB={this.state.currentRankB}
+          suit={this.state.currentSuit}
+        />
+      </div>
+    );
+  }
+
   displayActivityLog() {
     return (
       <div
@@ -697,6 +738,15 @@ class Game extends Component {
             </p>
           );
         })}
+        <form onSubmit={this.sendMessage}>
+          <input
+            value={this.state.inputMessage}
+            name="inputMessage"
+            onChange={this.handleChange}
+            required
+          ></input>
+          <button type="submit">Send</button>
+        </form>
       </div>
     );
   }
@@ -716,6 +766,7 @@ class Game extends Component {
             />
           );
         })}
+        {this.displayCurrentCall()}
       </div>
     );
   }

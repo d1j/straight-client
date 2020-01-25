@@ -38,7 +38,7 @@ class PlayerAvatar extends Component {
         marginLeft: "20px",
         backgroundColor: this.props.is_current_player
           ? "rgb(255, 200,200)"
-          : "rgb(255,255,255)"
+          : "rgb(36, 112, 33)"
       }
     };
   }
