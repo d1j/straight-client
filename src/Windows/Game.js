@@ -106,6 +106,19 @@ class Game extends Component {
       });
     });
 
+    this.props.socket.on("started-hand", () => {
+      if (this.props.__dev) console.log(`(SOCKET.IO) started-hand `);
+
+      let index = this.findUserIndex(this.state.currPlayerID);
+      let username = this.state.playerData[index].username;
+      this.addNewMessage(`${username} is now calling.`);
+
+      this.setState({
+        isUserCurrPlayer:
+          this.state.userPlayerID == this.state.currPlayerID ? true : false
+      });
+    });
+
     this.props.socket.on("all-players-are-ready", () => {
       if (this.props.__dev) console.log("(SOCKET.IO) all-players-are-ready");
     });
@@ -129,6 +142,42 @@ class Game extends Component {
       //TODO: Display current call bar
     });
 
+    /**
+      [
+        { status: "playing", cards: [{ s: 1, r: 4 }], player_id: 0, num_cards: 1 },
+        { status: "playing", cards: [{ s: 0, r: 5 }], player_id: 1, num_cards: 1 }
+      ];
+     */
+    this.props.socket.on("player-checked", () => {
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) player-checked");
+      }
+      let _index = this.findUserIndex(this.state.currPlayerID);
+      this.addNewMessage(
+        `${this.state.playerData[_index].username} has checked.`
+      );
+    });
+
+    this.props.socket.on("all-cards", data => {
+      if (this.props.__dev) {
+        console.log("(SOCKET.IO) all-cards");
+        console.log(data);
+      }
+      let _index = this.findUserIndex(this.state.currPlayerID);
+      this.addNewMessage(`Displaying all cards.`);
+      for (let i = 0; i < data.length; i++) {
+        let index = this.findUserIndex(data[i].player_id);
+        if (data[i].status == "playing") {
+          this.state.playerData[index].cards = data[i].cards;
+          this.state.playerData[index].num_cards = data[i].num_cards;
+        } else {
+          this.state.playerData[index].cards = [];
+          this.state.playerData[index].num_cards = -1;
+        }
+      }
+      this.forceUpdate();
+    });
+
     this.c_setCall = this.c_setCall.bind(this);
     this.resetHand = this.resetHand.bind(this);
     this.updateCallText = this.updateCallText.bind(this);
@@ -138,8 +187,9 @@ class Game extends Component {
     this.displayActivityLog = this.displayActivityLog.bind(this);
     this.displayPlayers = this.displayPlayers.bind(this);
     this.addNewMessage = this.addNewMessage.bind(this);
-    this.makeCall = this.makeCall.bind(this);
     this.findUserIndex = this.findUserIndex.bind(this);
+    this.sendCall = this.sendCall.bind(this);
+    this.sendCheck = this.sendCheck.bind(this);
   }
 
   findUserIndex(id) {
@@ -478,17 +528,24 @@ class Game extends Component {
     );
   }
 
-  makeCall() {
-    console.log(this.state);
-    let call = {
-      comb: this.state.selectedComb,
-      rankA: this.state.selectedRankA,
-      rankB: this.state.selectedRankB,
-      suit: this.state.selectedSuit
-    };
-    this.props.socket.emit("call", call);
+  sendCall() {
+    if (this.state.callValidity == "valid") {
+      let call = {
+        comb: this.state.selectedComb,
+        rankA: this.state.selectedRankA,
+        rankB: this.state.selectedRankB,
+        suit: this.state.selectedSuit
+      };
+      this.props.socket.emit("call", call);
+      this.setState({ isUserCurrPlayer: false });
+      this.addNewMessage("You made a call.");
+    }
+  }
+
+  sendCheck() {
+    this.props.socket.emit("check");
     this.setState({ isUserCurrPlayer: false });
-    this.addNewMessage("You made a call.");
+    this.addNewMessage("You checked the current call.");
   }
 
   displayCallBar() {
@@ -506,7 +563,7 @@ class Game extends Component {
             <br />
             <span className="current-call">{this.state.selectedCallText}</span>
           </h2>
-          <button onClick={this.makeCall}>Make a Call</button>
+          <button onClick={this.sendCall}>Make a Call</button>
           <button onClick={this.sendCheck} style={{ marginBottom: "0.5vw" }}>
             Check
           </button>
