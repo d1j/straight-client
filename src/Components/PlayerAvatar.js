@@ -4,10 +4,10 @@ import Card from "./Card";
 /**
  * props: {
  *  cards: [],
- *  num_cards: 0 < Number < 5,
- *  player_id: String,
+ *  numCards: 0 < Number < 5,
+ *  playerID: String,
  *  username: String,
- *  is_current_player: Boolean
+ *  isCurrentPlayer: Boolean
  * }
  */
 
@@ -36,19 +36,19 @@ class PlayerAvatar extends Component {
       style: {
         marginTop: "10px",
         marginLeft: "20px",
-        backgroundColor: this.props.is_current_player
+        backgroundColor: this.props.isCurrentPlayer
           ? "rgb(255, 200,200)"
           : "rgb(36, 112, 33)"
       }
     };
   }
   render() {
-    if (+this.props.num_cards <= 0 || +this.props.num_cards >= 5) {
+    if (+this.props.numCards <= 0 || +this.props.numCards >= 5) {
       //Cards haven't been dealt yet.
       return (
         <div style={this.state.style}>
           <h2>
-            {this.props.player_id}:<b>{this.props.username}</b>
+            {this.props.playerID}:<b>{this.props.username}</b>
           </h2>
         </div>
       );
@@ -58,9 +58,9 @@ class PlayerAvatar extends Component {
         return (
           <div style={this.state.style}>
             <h2>
-              {this.props.player_id}:<b>{this.props.username}</b>
+              {this.props.playerID}:<b>{this.props.username}</b>
             </h2>
-            {Array.apply(null, { length: +this.props.num_cards }).map(
+            {Array.apply(null, { length: +this.props.numCards }).map(
               (yeet, index) => {
                 return (
                   <img
@@ -79,11 +79,11 @@ class PlayerAvatar extends Component {
         return (
           <div style={this.state.style}>
             <h2>
-              {this.props.player_id}:<b>{this.props.username}</b>
+              {this.props.playerID}:<b>{this.props.username}</b>
             </h2>
             <UserCards
               cards={this.props.cards}
-              num_cards={this.props.num_cards}
+              numCards={this.props.numCards}
             />
           </div>
         );

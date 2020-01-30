@@ -19,14 +19,13 @@ class Register extends Component {
       password: "",
       cpassword: "",
 
-      is_from_valid: false,
       message: "",
       messColor: "",
 
-      _min_pass_length: 6, //Leaving it to 6 while developing the application and not realeasing it to the public.
-      _max_pass_length: 128,
-      _min_user_length: 3,
-      _max_user_length: 32,
+      min_pass_length: 6, //Leaving it to 6 while developing the application and not realeasing it to the public.
+      max_pass_length: 128,
+      min_user_length: 3,
+      max_user_length: 32,
 
       disabledButton: false
     };
@@ -46,23 +45,23 @@ class Register extends Component {
     let err = "";
     let { username, email, password, cpassword } = this.state,
       {
-        _max_pass_length,
-        _min_pass_length,
-        _max_user_length,
-        _min_user_length
+        max_pass_length,
+        min_pass_length,
+        max_user_length,
+        min_user_length
       } = this.state;
 
     //Check email
     if (!isEmail(email)) {
       err = `Invalid email.`;
-    } else if (username.length < _min_user_length) {
-      err = `Username is too short. Min ${_min_user_length} characters.`;
-    } else if (username.length > _max_user_length) {
-      err = `Username is too long. Max ${_max_pass_length} characters.`;
-    } else if (password.length < _min_pass_length) {
-      err = `Password is too short. Min ${_min_pass_length} characters.`;
-    } else if (password.length > _max_pass_length) {
-      err = `Password is too long. Max ${_max_pass_length} characters.`;
+    } else if (username.length < min_user_length) {
+      err = `Username is too short. Min ${min_user_length} characters.`;
+    } else if (username.length > max_user_length) {
+      err = `Username is too long. Max ${max_pass_length} characters.`;
+    } else if (password.length < min_pass_length) {
+      err = `Password is too short. Min ${min_pass_length} characters.`;
+    } else if (password.length > max_pass_length) {
+      err = `Password is too long. Max ${max_pass_length} characters.`;
     } else if (password !== cpassword) {
       err = `Password and confirmed password do not match.`;
     }

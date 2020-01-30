@@ -14,9 +14,9 @@ class CreateLobby extends Component {
     super(props);
 
     this.state = {
-      lobby_name: this.props.username + "'s lobby",
-      lobby_password: "",
-      lobby_id: null,
+      lobbyName: this.props.username + "'s lobby",
+      lobbyPassword: "",
+      lobbyID: null,
 
       message: "",
 
@@ -43,11 +43,11 @@ class CreateLobby extends Component {
       axios
         .post(`${self.props.host}/lobby/create`, {
           token: self.props.__token,
-          lobby_password: self.state.lobby_password,
-          lobby_name: self.state.lobby_name
+          lobbyPassword: self.state.lobbyPassword,
+          lobbyName: self.state.lobbyName
         })
         .then(res => {
-          self.props.joinLobby(res.data.lobby_id, this.state.lobby_password);
+          self.props.joinLobby(res.data.lobbyID, this.state.lobbyPassword);
         })
         .catch(err => {
           console.log(err);
@@ -68,8 +68,8 @@ class CreateLobby extends Component {
             <FormLabel>Lobby name</FormLabel>
             <FormControl
               type="text"
-              placeholder={this.state.lobby_name}
-              name="lobby_name"
+              placeholder={this.state.lobbyName}
+              name="lobbyName"
               onChange={this.handleChange}
             />
           </FormGroup>
@@ -78,7 +78,7 @@ class CreateLobby extends Component {
             <FormControl
               type="text"
               placeholder="Enter lobby password"
-              name="lobby_password"
+              name="lobbyPassword"
               onChange={this.handleChange}
             />
             <FormText>

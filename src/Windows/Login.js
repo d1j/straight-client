@@ -16,10 +16,10 @@ class Login extends Component {
       password: "",
       message: "",
 
-      _min_pass_length: 6, //Leaving it to 6 while developing the application.
-      _max_pass_length: 128,
-      _min_email_length: 3,
-      _max_email_length: 64,
+      min_pass_length: 6, //Leaving it to 6 while developing the application.
+      max_pass_length: 128,
+      min_email_length: 3,
+      max_email_length: 64,
 
       disabledButton: false
     };
@@ -46,20 +46,20 @@ class Login extends Component {
     let err = "";
     let { email, password } = this.state,
       {
-        _max_pass_length,
-        _min_pass_length,
-        _max_email_length,
-        _min_email_length
+        max_pass_length,
+        min_pass_length,
+        max_email_length,
+        min_email_length
       } = this.state;
 
-    if (email.length < _min_email_length) {
-      err = `Email is too short. Min ${_min_email_length} characters.`;
-    } else if (email.length > _max_email_length) {
-      err = `Email is too long. Max ${_max_email_length} characters.`;
-    } else if (password.length < _min_pass_length) {
-      err = `Password is too short. Min ${_min_pass_length} characters.`;
-    } else if (password.length > _max_pass_length) {
-      err = `Password is too long. Max ${_max_pass_length} characters.`;
+    if (email.length < min_email_length) {
+      err = `Email is too short. Min ${min_email_length} characters.`;
+    } else if (email.length > max_email_length) {
+      err = `Email is too long. Max ${max_email_length} characters.`;
+    } else if (password.length < min_pass_length) {
+      err = `Password is too short. Min ${min_pass_length} characters.`;
+    } else if (password.length > max_pass_length) {
+      err = `Password is too long. Max ${max_pass_length} characters.`;
     }
 
     this.setState({ message: err });

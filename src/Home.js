@@ -27,8 +27,8 @@ class Home extends React.Component {
     this.setState({ __token: token });
   }
 
-  setView(p_view) {
-    this.setState({ view: p_view });
+  setView(_view) {
+    this.setState({ view: _view });
   }
 
   goToLogin() {

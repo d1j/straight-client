@@ -74,8 +74,8 @@ class MainMenu extends Component {
     this.setState({ loading: true });
     axios
       .post(`${self.props.host}/lobby/join`, {
-        lobby_id: lobbyID,
-        lobby_password: lobbyPassword,
+        lobbyID,
+        lobbyPassword,
         token: self.props.__token
       })
       .then(res => {

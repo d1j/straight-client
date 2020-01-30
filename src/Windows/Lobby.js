@@ -51,14 +51,12 @@ class Lobby extends Component {
       } //data = {leftPlayerID, newHostID}
       let players = this.state.data.players;
       //remove player
-      let leftIndex = players.map(p => p.player_id).indexOf(data.leftPlayerID);
+      let leftIndex = players.map(p => p.playerID).indexOf(data.leftPlayerID);
       this.state.data.players.splice(leftIndex, 1);
 
       if (+data.newHostID !== -1) {
         //set new host in players array
-        let newHostIndex = players
-          .map(p => p.player_id)
-          .indexOf(data.newHostID);
+        let newHostIndex = players.map(p => p.playerID).indexOf(data.newHostID);
         this.state.data.players[newHostIndex].isHost = true;
       }
 
@@ -74,12 +72,12 @@ class Lobby extends Component {
       this.setState({ view: 1 });
     });
 
-    this.socket.on("lobby-info", _data => {
+    this.socket.on("lobby-info", data => {
       if (this.props.__dev) {
         console.log("(SOCKET.IO) lobby-info");
-        console.log(_data);
+        console.log(data);
       }
-      this.setState({ data: _data });
+      this.setState({ data: data });
     });
 
     this.renderTable = this.renderTable.bind(this);
@@ -137,7 +135,7 @@ class Lobby extends Component {
           {this.state.data.players.map((user, index) => {
             return (
               <tr key={index}>
-                <th>{user.player_id}</th>
+                <th>{user.playerID}</th>
                 <th>{user._id.username}</th>
                 <th>{user._id.playedGames}</th>
                 <th>{user._id.wonGames.first}</th>

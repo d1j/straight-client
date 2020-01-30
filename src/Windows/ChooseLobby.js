@@ -35,7 +35,7 @@ class ChooseLobby extends Component {
       .post(`${self.props.host}/lobby/list`, {
         token: self.props.__token,
         page: self.state.page,
-        lobbies_on_page: self.state.lobbiesOnPage,
+        lobbiesOnPage: self.state.lobbiesOnPage,
         search: self.state.searchString
       })
       .then(res => {
@@ -67,7 +67,7 @@ class ChooseLobby extends Component {
       this.setState({ message: "Please choose a lobby to join." });
     } else if (
       this.state.password.length === 0 &&
-      this.state.data[this.state.chosenIndex].requires_password
+      this.state.data[this.state.chosenIndex].requiresPassword
     ) {
       this.setState({ message: "Please enter the lobby password." });
     } else {
@@ -101,9 +101,9 @@ class ChooseLobby extends Component {
                   }}
                 >
                   <th>{lobby.name}</th>
-                  <th>{`${lobby.player_count}/6`}</th>
+                  <th>{`${lobby.playerCount}/6`}</th>
                   <th>{lobby.status}</th>
-                  <th>{lobby.requires_password ? "Yes" : "No"}</th>
+                  <th>{lobby.requiresPassword ? "Yes" : "No"}</th>
                   <th>
                     <button name={index} onClick={this.chooseLobby}>
                       Choose

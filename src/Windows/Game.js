@@ -54,11 +54,11 @@ class Game extends Component {
 
     for (let i = 0; i < this.props.playerData.length; i++) {
       this.state.playerData.push({
-        player_id: this.props.playerData[i].player_id,
+        playerID: this.props.playerData[i].playerID,
         username: this.props.playerData[i]._id.username,
-        is_user: this.props.playerData[i].isUser,
-        is_current_player: false,
-        num_cards: 1,
+        isUser: this.props.playerData[i].isUser,
+        isCurrentPlayer: false,
+        numCards: 1,
         cards: []
       });
     }
@@ -108,10 +108,10 @@ class Game extends Component {
       if (this.props.__dev) console.log(`(SOCKET.IO) started-hand `);
 
       //lostPlayerID will be set in hand-result
-      //if lostPlayerID != -1, it means that the player got +1 card and the client has not updated player's num_cards yet
+      //if lostPlayerID != -1, it means that the player got +1 card and the client has not updated player's numCards yet
       if (this.state.lostPlayerID != -1) {
         let _index = this.findUserIndex(this.state.lostPlayerID);
-        this.state.playerData[_index].num_cards++;
+        this.state.playerData[_index].numCards++;
         this.addNewMessage(
           `${this.state.playerData[_index].username} received +1 card.`
         );
@@ -161,8 +161,8 @@ class Game extends Component {
     });
     /**
       [
-        { status: "playing", cards: [{ s: 1, r: 4 }], player_id: 0, num_cards: 1 },
-        { status: "playing", cards: [{ s: 0, r: 5 }], player_id: 1, num_cards: 1 }
+        { status: "playing", cards: [{ s: 1, r: 4 }], playerID: 0, numCards: 1 },
+        { status: "playing", cards: [{ s: 0, r: 5 }], playerID: 1, numCards: 1 }
       ];
      */
     this.props.socket.on("all-cards", data => {
@@ -172,13 +172,13 @@ class Game extends Component {
       }
       this.addNewMessage(`Displaying all cards.`);
       for (let i = 0; i < data.length; i++) {
-        let index = this.findUserIndex(data[i].player_id);
+        let index = this.findUserIndex(data[i].playerID);
         if (data[i].status == "playing") {
           this.state.playerData[index].cards = data[i].cards;
-          this.state.playerData[index].num_cards = data[i].num_cards;
+          this.state.playerData[index].numCards = data[i].numCards;
         } else {
           this.state.playerData[index].cards = [];
-          this.state.playerData[index].num_cards = -1;
+          this.state.playerData[index].numCards = -1;
         }
       }
       this.forceUpdate();
@@ -189,11 +189,11 @@ class Game extends Component {
         console.log("(SOCKET.IO) hand-result");
         console.log(data);
       }
-      let index = this.findUserIndex(data.lost_player);
+      let index = this.findUserIndex(data.lostPlayer);
       this.addNewMessage(
         `${this.state.playerData[index].username} lost the hand.`
       );
-      this.setState({ lostPlayerID: data.lost_player });
+      this.setState({ lostPlayerID: data.lostPlayer });
     });
 
     this.props.socket.on("refresh-hand", () => {
@@ -217,7 +217,7 @@ class Game extends Component {
           `${this.state.playerData[index].username} got the 5th card and is now spectating.`
         );
       }
-      this.state.playerData[index].num_cards = -1;
+      this.state.playerData[index].numCards = -1;
       this.state.playerData[index].cards = [];
       this.forceUpdate();
     });
@@ -245,7 +245,7 @@ class Game extends Component {
         console.log("(SOCKET.IO) message");
         console.log(data);
       }
-      let index = this.findUserIndex(data.player_id);
+      let index = this.findUserIndex(data.playerID);
       this.addNewMessage(
         `${this.state.playerData[index].username}: ${data.message}`
       );
@@ -280,7 +280,7 @@ class Game extends Component {
 
   findUserIndex(id) {
     for (let i = 0; i < this.state.playerData.length; i++) {
-      if (this.state.playerData[i].player_id == id) {
+      if (this.state.playerData[i].playerID == id) {
         return i;
       }
     }
@@ -289,10 +289,10 @@ class Game extends Component {
 
   componentDidMount() {
     /**
-     *  0: {_id: {…}, player_id: 0, isHost: true, isUser: false}
+     *  0: {_id: {…}, playerID: 0, isHost: true, isUser: false}
         1:
           _id: {wonGames: {…}, playedGames: 0, username: "qwe"}
-          player_id: 1
+          playerID: 1
           isHost: false
           isUser: true
      */
@@ -300,7 +300,7 @@ class Game extends Component {
     let userPlayerID;
     for (let i = 0; i < playerData.length; i++) {
       if (playerData[i].isUser) {
-        userPlayerID = playerData[i].player_id;
+        userPlayerID = playerData[i].playerID;
       }
     }
     this.props.socket.emit("ready-to-start-game");
@@ -326,7 +326,7 @@ class Game extends Component {
 
   resetHand() {
     for (let i = 0; i < this.state.playerData.length; i++) {
-      if (this.state.playerData[i].player_id != this.state.userPlayerID) {
+      if (this.state.playerData[i].playerID != this.state.userPlayerID) {
         this.state.playerData[i].cards = [];
       }
     }
@@ -759,10 +759,10 @@ class Game extends Component {
             <PlayerAvatar
               key={index}
               cards={player.cards}
-              num_cards={player.num_cards}
-              player_id={player.player_id}
+              numCards={player.numCards}
+              playerID={player.playerID}
               username={player.username}
-              is_current_player={player.is_current_player}
+              isCurrentPlayer={player.isCurrentPlayer}
             />
           );
         })}
