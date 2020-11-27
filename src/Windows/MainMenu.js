@@ -21,7 +21,7 @@ class MainMenu extends Component {
 
       loading: true,
 
-      view: 0 //0 - main screen//1 - join lobby//2 - create lobby//3 - lobby//
+      view: 0, //0 - main screen//1 - join lobby//2 - create lobby//3 - lobby//
     };
 
     this.chooseLobby = this.chooseLobby.bind(this);
@@ -38,28 +38,27 @@ class MainMenu extends Component {
   setView(view) {
     this.setState({ view: view });
   }
-
   //TODO: improve error handling
   //BUILD: modify request
   componentDidMount() {
     let self = this;
     axios
       .post(`${self.props.host}/account/stats`, {
-        token: self.props.__token
+        token: self.props.__token,
       })
-      .then(res => {
+      .then((res) => {
         self.setState({
-          username: res.data.user,
-          gameCountFirst: res.data.first,
-          gameCountSecond: res.data.second,
-          gameCount: res.data.played,
-          loading: false
+          username: res.data.username,
+          gameCountFirst: res.data.wonGamesFirst,
+          gameCountSecond: res.data.wonGamesSecond,
+          gameCount: res.data.playedGames,
+          loading: false,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         //TODO: error handling
         self.setState({
-          message: "Error occured while gathering user statistics"
+          message: "Error occured while gathering user statistics",
         });
         console.log(err);
       });
@@ -76,21 +75,21 @@ class MainMenu extends Component {
       .post(`${self.props.host}/lobby/join`, {
         lobbyID,
         lobbyPassword,
-        token: self.props.__token
+        token: self.props.__token,
       })
-      .then(res => {
+      .then((res) => {
         self.setState({
           loading: false,
           lobbyID: lobbyID,
           lobbyData: res.data,
-          view: 3
+          view: 3,
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
         self.setState({
           message: "Error occured while joining the lobby",
-          loading: false
+          loading: false,
         });
       });
   }
@@ -106,12 +105,12 @@ class MainMenu extends Component {
 
     axios
       .post(`${self.props.host}/account/logout`, {
-        token: self.props.__token
+        token: self.props.__token,
       })
-      .then(res => {
+      .then((res) => {
         self.props.setView(0);
       })
-      .catch(err => {
+      .catch((err) => {
         //TODO: error handling
         console.log(err);
         self.props.setView(0);

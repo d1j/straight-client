@@ -12,9 +12,9 @@ class Home extends React.Component {
     super(props);
     this.state = {
       view: 0, //0 - home screen//1 - login screen//2 - register screen//3 - main menu screen//4 - development
-      host: "http://localhost:3001",
+      host: "http://localhost:3000",
       __token: "",
-      __dev: true
+      __dev: true,
     };
 
     this.setView = this.setView.bind(this);

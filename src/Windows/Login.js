@@ -4,7 +4,7 @@ import {
   FormGroup,
   FormLabel,
   FormControl,
-  Button
+  Button,
 } from "react-bootstrap";
 import axios from "axios";
 
@@ -12,8 +12,8 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: "",
-      password: "",
+      email: "qwe@gmail.com",
+      password: "123456",
       message: "",
 
       min_pass_length: 6, //Leaving it to 6 while developing the application.
@@ -21,7 +21,7 @@ class Login extends Component {
       min_email_length: 3,
       max_email_length: 64,
 
-      disabledButton: false
+      disabledButton: false,
     };
     this.homeView = this.homeView.bind(this);
     this.mainScreenView = this.mainScreenView.bind(this);
@@ -49,7 +49,7 @@ class Login extends Component {
         max_pass_length,
         min_pass_length,
         max_email_length,
-        min_email_length
+        min_email_length,
       } = this.state;
 
     if (email.length < min_email_length) {
@@ -77,9 +77,9 @@ class Login extends Component {
         axios
           .post(`${self.props.host}/account/login`, {
             email: self.state.email,
-            password: self.state.password
+            password: self.state.password,
           })
-          .then(res => {
+          .then((res) => {
             //registration succeded
             //BUILD: clean up
             if (self.props.__dev) {
@@ -87,11 +87,11 @@ class Login extends Component {
             }
             self.mainScreenView();
           })
-          .catch(err => {
+          .catch((err) => {
             console.log(err);
             self.setState({
               message: "An error ocurred while logging in",
-              disabledButton: false
+              disabledButton: false,
             });
           });
       } else {

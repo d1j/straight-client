@@ -13,11 +13,15 @@ class Lobby extends Component {
       loading: true,
       message: "",
       data: this.props.data,
-      view: 0 //0 - Lobby//1 - Game//
+      view: 0, //0 - Lobby//1 - Game//
     };
 
     this.socket = socketIOClient(this.props.host, {
-      query: { token: this.props.__token, lobby: this.props.lobbyID }
+      query: {
+        token: this.props.__token,
+        lobbyID: this.props.lobbyID,
+      },
+      transports: ["websocket"],
     });
 
     //On successful connection client emits 'join-lobby' to the server
@@ -35,7 +39,7 @@ class Lobby extends Component {
       this.setState({ loading: false });
     });
 
-    this.socket.on("new-player-in-lobby", data => {
+    this.socket.on("new-player-in-lobby", (data) => {
       if (this.props.__dev) {
         console.log("(SOCKET.IO) new-player-in-lobby");
         console.log(data);
@@ -44,19 +48,21 @@ class Lobby extends Component {
       this.forceUpdate();
     });
 
-    this.socket.on("player-left", data => {
+    this.socket.on("player-left", (data) => {
       if (this.props.__dev) {
         console.log("(SOCKET.IO) player-left");
         console.log(data);
       } //data = {leftPlayerID, newHostID}
       let players = this.state.data.players;
       //remove player
-      let leftIndex = players.map(p => p.playerID).indexOf(data.leftPlayerID);
+      let leftIndex = players.map((p) => p.playerID).indexOf(data.leftPlayerID);
       this.state.data.players.splice(leftIndex, 1);
 
       if (+data.newHostID !== -1) {
         //set new host in players array
-        let newHostIndex = players.map(p => p.playerID).indexOf(data.newHostID);
+        let newHostIndex = players
+          .map((p) => p.playerID)
+          .indexOf(data.newHostID);
         this.state.data.players[newHostIndex].isHost = true;
       }
 
@@ -72,7 +78,7 @@ class Lobby extends Component {
       this.setState({ view: 1 });
     });
 
-    this.socket.on("lobby-info", data => {
+    this.socket.on("lobby-info", (data) => {
       if (this.props.__dev) {
         console.log("(SOCKET.IO) lobby-info");
         console.log(data);
